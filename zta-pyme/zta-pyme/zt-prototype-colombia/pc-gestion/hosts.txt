@@ -1,0 +1,4 @@
+# /etc/hosts — Management server (PC gestión)
+127.0.0.1       localhost
+10.195.26.114   recurso.empresa.local
+127.0.0.1       keycloak
