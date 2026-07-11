@@ -1,0 +1,26 @@
+authenticate_service_url: https://authenticate.empresa.local
+
+routes:
+  # Authentication callback route
+  - from: https://authenticate.empresa.local
+    to: https://192.168.30.1:443
+    allow_any_authenticated_user: false
+    tls_skip_verify: true
+    preserve_host_header: true
+
+  # Internal web server — any authenticated user
+  - from: https://app.empresa.local
+    to: http://192.168.10.100:80
+    allow_any_authenticated_user: true
+    pass_identity_headers: true
+    tls_skip_verify: true
+
+  # Cloud web server — restricted to pyme-users group members
+  - from: https://recurso.empresa.local
+    to: http://10.195.23.159:80
+    pass_identity_headers: true
+    tls_skip_verify: true
+    policy:
+      - allow:
+          and:
+            - claim/groups: pyme-users

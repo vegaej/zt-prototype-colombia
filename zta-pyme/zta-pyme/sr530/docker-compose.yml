@@ -1,0 +1,28 @@
+services:
+  pomerium-proxy:
+    image: pomerium/pomerium:v0.32.4
+    restart: unless-stopped
+    # Host network mode required to listen on the server's public interface
+    network_mode: host
+    env_file: .env
+    environment:
+      # This node runs only as a proxy (PEP)
+      SERVICES: proxy
+      ADDRESS: ":443"
+      HTTP_REDIRECT_ADDR: ":80"
+      # Authenticate and authorize services run on the management server
+      AUTHENTICATE_SERVICE_URL: https://authenticate.empresa.local
+      AUTHORIZE_SERVICE_URL: grpcs://192.168.30.1:5443
+      DATABROKER_SERVICE_URL: grpcs://192.168.30.1:5443
+      SHARED_SECRET: ${POMERIUM_SHARED_SECRET}
+      COOKIE_SECRET: ${POMERIUM_COOKIE_SECRET}
+    volumes:
+      - ./config/config.yaml:/pomerium/config.yaml:ro
+      # TLS certificate and key (generated from internal CA — not included)
+      - ./config/pomerium-edge-fullchain.crt:/pomerium/certs/cert.crt:ro
+      - ./config/pomerium-edge.key:/pomerium/certs/cert.key:ro
+      # Combined CA bundle: system CAs + internal CA
+      - ./combined-ca.crt:/etc/ssl/certs/ca-certificates.crt:ro
+    extra_hosts:
+      - "keycloak:192.168.30.1"
+      - "authenticate.empresa.local:192.168.30.1"
